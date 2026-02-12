@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Logic Generator & Explainer</title>
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --dark: #2c3e50;
+            --bg: #f4f7f6;
+            --info: #3498db;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); padding: 20px; display: flex; justify-content: center; }
+        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 650px; }
+        h2 { color: var(--dark); text-align: center; margin-bottom: 25px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        .section { padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #eee; }
+        .encode-bg { background-color: #f0fff4; border-color: #c6f6d5; }
+        .range-bg { background-color: #fffaf0; border-color: #feebc8; }
+        .explainer-bg { background-color: #f8f9fa; border: 1px solid #ddd; color: #444; line-height: 1.6; }
+        
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #4a5568; font-size: 0.9em; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        input { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1.1em; text-align: center; }
+        
+        button { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; width: 100%; }
+        .btn-encode { background-color: var(--primary); }
+        .btn-range { background-color: #f39c12; }
+        
+        .result-display { margin-top: 15px; text-align: center; font-size: 1.6em; font-weight: bold; color: var(--dark); }
+        #rangeResultTable { margin-top: 15px; max-height: 300px; overflow-y: auto; border-radius: 8px; border: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: #eee; padding: 10px; position: sticky; top: 0; }
+        td { padding: 8px; text-align: center; border-bottom: 1px solid #eee; }
+
+        /* Explainer Style */
+        .explainer-title { font-weight: bold; color: var(--info); border-bottom: 1px solid #ccc; margin-bottom: 10px; display: block; }
+        code { background: #eee; padding: 2px 5px; border-radius: 4px; font-family: monospace; }
+        .math-box { background: #fff; padding: 10px; border-radius: 5px; border-left: 4px solid var(--info); margin: 10px 0; font-family: monospace; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>QR Logic Generator</h2>
+
+    <div class="section encode-bg">
+        <label>1. แปลงเลข Serial เป็นรหัส QR (รายใบ)</label>
+        <div class="input-group">
+            <input type="number" id="serialIn" placeholder="ใส่เลข 8 หลัก เช่น 14399212">
+        </div>
+        <button class="btn-encode" onclick="doEncode()">สร้างรหัส QR</button>
+        <div id="resEncode" class="result-display"></div>
+    </div>
+
+    <div class="section range-bg">
+        <label>2. สร้างตารางรหัสแบบเป็นช่วง (Range List)</label>
+        <div class="input-group">
+            <input type="number" id="startR" placeholder="เริ่มจากเลข">
+            <input type="number" id="endR" placeholder="ถึงเลข">
+        </div>
+        <button class="btn-range" onclick="doRange()">เจนรายการทั้งหมด</button>
+        <div id="rangeResultTable"></div>
+    </div>
+
+    <div class="section explainer-bg">
+        <span class="explainer-title">ℹ️ อธิบายขั้นตอนการคำนวณ (Calculation Logic)</span>
+        <div style="font-size: 0.85em;">
+            รหัส QR 5 หลักนี้ ไม่ใช่รหัสสุ่ม แต่เกิดจากการนำเลข <b>Serial</b> มาผ่านกระบวนการทางคณิตศาสตร์ 2 ขั้นตอนดังนี้:
+            
+            <p><b>ขั้นตอนที่ 1: การคำนวณหาค่าเลขฐาน (Linear Congruential)</b><br>
+            นำเลข Serial มาคูณด้วยตัวแปรเฉพาะ บวกรวมกับค่า Offset แล้วทำการหาเศษ (Modulo) ด้วย $36^5$ เพื่อให้ได้ตัวเลขที่ไม่เกินขีดจำกัดของรหัส 5 หลัก:</p>
+            <div class="math-box">
+                R = (Serial × 35,477,987 + 46,913,010) mod 60,466,176
+            </div>
+
+            <p><b>ขั้นตอนที่ 2: การแปลงเลขเป็นตัวอักษร 5 หลัก (Base36 Encoding)</b><br>
+            นำค่า <code>R</code> ที่ได้มาแปลงเป็นตัวเลขฐาน 36 (0-9 และ A-Z) โดยการหารเอาส่วนและเอาเศษตามลำดับน้ำหนักของหลัก $36^4$ ถึง $36^0$</p>
+            <ul>
+                <li>หลักที่ 1 = <code>R ÷ 36⁴</code></li>
+                <li>หลักที่ 2 = <code>(เศษจากหลักแรก) ÷ 36³</code></li>
+                <li>... ทำต่อไปจนครบ 5 หลัก ...</li>
+            </ul>
+            <p><i>ตัวอย่าง: เลข 14,399,212 คำนวณได้ค่า R = 24,310,070 แปลงเป็นฐาน 36 ได้ <b>EH1RQ</b></i></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const M = BigInt(60466176);
+    const A = BigInt(35477987);
+    const B = BigInt(46913010);
+    const ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    function toBase36(num) {
+        let res = "";
+        let n = Number(num);
+        for (let i = 4; i >= 0; i--) {
+            let p = Math.pow(36, i);
+            let idx = Math.floor(n / p);
+            res += ALPHABET[idx];
+            n %= p;
+        }
+        return res;
+    }
+
+    function calculate(serialValue) {
+        const s = BigInt(serialValue);
+        const r = (s * A + B) % M;
+        return toBase36(r);
+    }
+
+    function doEncode() {
+        const val = document.getElementById('serialIn').value;
+        if(!val) return;
+        document.getElementById('resEncode').innerText = calculate(val);
+    }
+
+    function doRange() {
+        const start = parseInt(document.getElementById('startR').value);
+        const end = parseInt(document.getElementById('endR').value);
+        if(isNaN(start) || isNaN(end)) return;
+        let html = "<table><tr><th>Serial</th><th>QR Code</th></tr>";
+        for(let i = start; i <= Math.min(end, start + 2000); i++) {
+            html += `<tr><td>${i}</td><td style="color:#e67e22; font-weight:bold;">${calculate(i)}</td></tr>`;
+        }
+        html += "</table>";
+        document.getElementById('rangeResultTable').innerHTML = html;
+    }
+</script>
+
+</body>
+</html>
