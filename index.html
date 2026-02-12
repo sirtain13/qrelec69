@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Logic Generator & Explainer</title>
+    <title>QR Logic Master Tool</title>
     <style>
         :root {
             --primary: #2ecc71;
             --dark: #2c3e50;
             --bg: #f4f7f6;
             --info: #3498db;
+            --warning: #f39c12;
+            --danger: #e74c3c;
         }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); padding: 20px; display: flex; justify-content: center; }
         .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 650px; }
@@ -17,33 +19,36 @@
         
         .section { padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #eee; }
         .encode-bg { background-color: #f0fff4; border-color: #c6f6d5; }
+        .decode-bg { background-color: #f0f7ff; border-color: #bee3f8; }
         .range-bg { background-color: #fffaf0; border-color: #feebc8; }
         .explainer-bg { background-color: #f8f9fa; border: 1px solid #ddd; color: #444; line-height: 1.6; }
         
         label { display: block; margin-bottom: 8px; font-weight: bold; color: #4a5568; font-size: 0.9em; }
         .input-group { display: flex; gap: 10px; margin-bottom: 10px; }
         input { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1.1em; text-align: center; }
+        input:focus { border-color: var(--info); outline: none; }
         
-        button { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; width: 100%; }
+        button { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; width: 100%; transition: 0.2s; }
+        button:active { transform: scale(0.98); }
         .btn-encode { background-color: var(--primary); }
-        .btn-range { background-color: #f39c12; }
+        .btn-decode { background-color: var(--info); }
+        .btn-range { background-color: var(--warning); }
         
-        .result-display { margin-top: 15px; text-align: center; font-size: 1.6em; font-weight: bold; color: var(--dark); }
+        .result-display { margin-top: 15px; text-align: center; font-size: 1.6em; font-weight: bold; color: var(--dark); min-height: 1.2em; }
         #rangeResultTable { margin-top: 15px; max-height: 300px; overflow-y: auto; border-radius: 8px; border: 1px solid #eee; }
         table { width: 100%; border-collapse: collapse; background: white; }
         th { background: #eee; padding: 10px; position: sticky; top: 0; }
         td { padding: 8px; text-align: center; border-bottom: 1px solid #eee; }
 
-        /* Explainer Style */
         .explainer-title { font-weight: bold; color: var(--info); border-bottom: 1px solid #ccc; margin-bottom: 10px; display: block; }
         code { background: #eee; padding: 2px 5px; border-radius: 4px; font-family: monospace; }
-        .math-box { background: #fff; padding: 10px; border-radius: 5px; border-left: 4px solid var(--info); margin: 10px 0; font-family: monospace; font-size: 0.9em; }
+        .math-box { background: #fff; padding: 10px; border-radius: 5px; border-left: 4px solid var(--info); margin: 10px 0; font-family: monospace; font-size: 0.85em; overflow-x: auto; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>QR Logic Generator</h2>
+    <h2>QR Logic Master Tool</h2>
 
     <div class="section encode-bg">
         <label>1. แปลงเลข Serial เป็นรหัส QR (รายใบ)</label>
@@ -54,8 +59,17 @@
         <div id="resEncode" class="result-display"></div>
     </div>
 
+    <div class="section decode-bg">
+        <label>2. ถอดรหัส QR กลับเป็นเลข Serial (รายใบ)</label>
+        <div class="input-group">
+            <input type="text" id="qrIn" maxlength="5" placeholder="ใส่รหัส 5 หลัก เช่น EH1RQ" style="text-transform: uppercase;">
+        </div>
+        <button class="btn-decode" onclick="doDecode()">ถอดรหัสเป็น Serial</button>
+        <div id="resDecode" class="result-display" style="color: var(--info);"></div>
+    </div>
+
     <div class="section range-bg">
-        <label>2. สร้างตารางรหัสแบบเป็นช่วง (Range List)</label>
+        <label>3. สร้างตารางรหัสแบบเป็นช่วง (Range List)</label>
         <div class="input-group">
             <input type="number" id="startR" placeholder="เริ่มจากเลข">
             <input type="number" id="endR" placeholder="ถึงเลข">
@@ -67,22 +81,18 @@
     <div class="section explainer-bg">
         <span class="explainer-title">ℹ️ อธิบายขั้นตอนการคำนวณ (Calculation Logic)</span>
         <div style="font-size: 0.85em;">
-            รหัส QR 5 หลักนี้ ไม่ใช่รหัสสุ่ม แต่เกิดจากการนำเลข <b>Serial</b> มาผ่านกระบวนการทางคณิตศาสตร์ 2 ขั้นตอนดังนี้:
-            
-            <p><b>ขั้นตอนที่ 1: การคำนวณหาค่าเลขฐาน (Linear Congruential)</b><br>
-            นำเลข Serial มาคูณด้วยตัวแปรเฉพาะ บวกรวมกับค่า Offset แล้วทำการหาเศษ (Modulo) ด้วย $36^5$ เพื่อให้ได้ตัวเลขที่ไม่เกินขีดจำกัดของรหัส 5 หลัก:</p>
+            <p><b>การเข้ารหัส (Encoding):</b><br>
+            ใช้สมการ Linear Congruential เพื่อหาค่า <code>R</code> แล้วแปลงเป็นฐาน 36</p>
             <div class="math-box">
                 R = (Serial × 35,477,987 + 46,913,010) mod 60,466,176
             </div>
 
-            <p><b>ขั้นตอนที่ 2: การแปลงเลขเป็นตัวอักษร 5 หลัก (Base36 Encoding)</b><br>
-            นำค่า <code>R</code> ที่ได้มาแปลงเป็นตัวเลขฐาน 36 (0-9 และ A-Z) โดยการหารเอาส่วนและเอาเศษตามลำดับน้ำหนักของหลัก $36^4$ ถึง $36^0$</p>
-            <ul>
-                <li>หลักที่ 1 = <code>R ÷ 36⁴</code></li>
-                <li>หลักที่ 2 = <code>(เศษจากหลักแรก) ÷ 36³</code></li>
-                <li>... ทำต่อไปจนครบ 5 หลัก ...</li>
-            </ul>
-            <p><i>ตัวอย่าง: เลข 14,399,212 คำนวณได้ค่า R = 24,310,070 แปลงเป็นฐาน 36 ได้ <b>EH1RQ</b></i></p>
+            <p><b>การถอดรหัส (Decoding):</b><br>
+            เนื่องจากเป็นเลขฐาน Modulo การย้ายข้างสมการต้องใช้ค่า <b>Modular Multiplicative Inverse</b> ของ 35,477,987 ซึ่งคือเลข <code>46,213,067</code></p>
+            <div class="math-box">
+                Serial = ((R - 46,913,010) × 46,213,067) mod 60,466,176
+            </div>
+            <p><i>*กรณี (R - Offset) ติดลบ ให้บวกด้วย 60,466,176 ก่อนคูณ Inverse</i></p>
         </div>
     </div>
 </div>
@@ -91,8 +101,10 @@
     const M = BigInt(60466176);
     const A = BigInt(35477987);
     const B = BigInt(46913010);
+    const INV = BigInt(46213067); // กุญแจสำคัญสำหรับถอดรหัส
     const ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+    // แปลง Decimal เป็น Base36
     function toBase36(num) {
         let res = "";
         let n = Number(num);
@@ -105,29 +117,65 @@
         return res;
     }
 
-    function calculate(serialValue) {
+    // แปลง Base36 กลับเป็น Decimal (R Value)
+    function fromBase36(str) {
+        let r = BigInt(0);
+        let s = str.toUpperCase();
+        for (let i = 0; i < s.length; i++) {
+            r = r * 36n + BigInt(ALPHABET.indexOf(s[i]));
+        }
+        return r;
+    }
+
+    // ฟังก์ชันคำนวณขาไป
+    function calculateEncode(serialValue) {
         const s = BigInt(serialValue);
         const r = (s * A + B) % M;
         return toBase36(r);
     }
 
+    // ฟังก์ชันคำนวณขากลับ
+    function calculateDecode(qrCode) {
+        const r = fromBase36(qrCode);
+        let step1 = (r - B) % M;
+        if (step1 < 0n) step1 += M; // จัดการค่าติดลบ
+        const serial = (step1 * INV) % M;
+        return serial.toString().padStart(8, '0');
+    }
+
     function doEncode() {
         const val = document.getElementById('serialIn').value;
         if(!val) return;
-        document.getElementById('resEncode').innerText = calculate(val);
+        document.getElementById('resEncode').innerText = calculateEncode(val);
+    }
+
+    function doDecode() {
+        const val = document.getElementById('qrIn').value.trim();
+        if(val.length !== 5) {
+            alert("กรุณากรอกรหัสให้ครบ 5 หลัก");
+            return;
+        }
+        document.getElementById('resDecode').innerText = calculateDecode(val);
     }
 
     function doRange() {
         const start = parseInt(document.getElementById('startR').value);
         const end = parseInt(document.getElementById('endR').value);
         if(isNaN(start) || isNaN(end)) return;
+        
         let html = "<table><tr><th>Serial</th><th>QR Code</th></tr>";
-        for(let i = start; i <= Math.min(end, start + 2000); i++) {
-            html += `<tr><td>${i}</td><td style="color:#e67e22; font-weight:bold;">${calculate(i)}</td></tr>`;
+        // จำกัดที่ 1,000 รายการเพื่อประสิทธิภาพ
+        const limit = Math.min(end, start + 1000); 
+        for(let i = start; i <= limit; i++) {
+            html += `<tr><td>${i}</td><td style="color:#e67e22; font-weight:bold;">${calculateEncode(i)}</td></tr>`;
         }
         html += "</table>";
         document.getElementById('rangeResultTable').innerHTML = html;
     }
+
+    // กด Enter ในช่อง Input
+    document.getElementById('serialIn').addEventListener('keypress', (e) => { if(e.key === 'Enter') doEncode(); });
+    document.getElementById('qrIn').addEventListener('keypress', (e) => { if(e.key === 'Enter') doDecode(); });
 </script>
 
 </body>
