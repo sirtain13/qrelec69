@@ -3,128 +3,625 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Logic Master Pro - Strict Batch Filter</title>
+    <title>QR Logic Master Pro v2 - Smart Validation</title>
     <style>
-        :root { --primary: #27ae60; --info: #2980b9; --dark: #2c3e50; --bg: #f4f7f6; --warning: #f1c40f; --danger: #e74c3c; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); padding: 20px; display: flex; justify-content: center; }
-        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); width: 100%; max-width: 650px; }
-        h2 { color: var(--dark); text-align: center; margin-bottom: 25px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        :root { 
+            --primary: #27ae60; 
+            --info: #2980b9; 
+            --dark: #2c3e50; 
+            --bg: #f4f7f6; 
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --success: #27ae60;
+        }
         
-        .section { padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #eee; transition: 0.3s; }
-        .encode-bg { background-color: #f0fff4; border-color: #c6f6d5; }
-        .decode-bg { background-color: #f0f7ff; border-color: #bee3f8; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px; 
+            display: flex; 
+            justify-content: center;
+            min-height: 100vh;
+        }
         
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: #4a5568; font-size: 0.9em; }
-        input { width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1.25em; text-align: center; box-sizing: border-box; }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
+            width: 100%; 
+            max-width: 750px;
+            margin: 20px 0;
+        }
         
-        button { padding: 15px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; color: white; width: 100%; font-size: 1.1em; margin-top: 10px; transition: 0.2s; }
-        button:disabled { background-color: #cbd5e0; cursor: not-allowed; }
-        .btn-encode { background-color: var(--dark); }
-        .btn-decode { background-color: var(--info); }
+        h2 { 
+            color: var(--dark); 
+            text-align: center; 
+            margin-bottom: 10px; 
+            border-bottom: 3px solid #667eea; 
+            padding-bottom: 10px;
+            font-size: 1.8em;
+        }
         
-        .result-display { margin-top: 20px; text-align: center; border-top: 2px dashed #eee; padding-top: 15px; min-height: 1.5em; }
-        .res-item { margin-bottom: 15px; font-size: 1.8em; font-weight: bold; color: var(--dark); display: flex; flex-direction: column; align-items: center; }
-        .badge { font-size: 0.4em; padding: 4px 10px; border-radius: 5px; color: white; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .version {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.85em;
+            margin-bottom: 20px;
+        }
         
-        .remark-box { background: #fff3cd; padding: 12px; border-radius: 10px; color: #856404; font-size: 0.85em; border: 1px solid #ffeeba; margin-top: 15px; }
+        .section { 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            border: 2px solid #eee; 
+            transition: 0.3s;
+            background: white;
+        }
+        
+        .section:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+        
+        .encode-bg { border-left: 4px solid #27ae60; }
+        .decode-bg { border-left: 4px solid #2980b9; }
+        
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: bold; 
+            color: #4a5568; 
+            font-size: 0.95em;
+        }
+        
+        input { 
+            width: 100%; 
+            padding: 14px; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 10px; 
+            font-size: 1.25em; 
+            text-align: center; 
+            box-sizing: border-box;
+            transition: 0.2s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        button { 
+            padding: 15px; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            color: white; 
+            width: 100%; 
+            font-size: 1.1em; 
+            margin-top: 10px; 
+            transition: 0.2s;
+        }
+        
+        button:disabled { 
+            background-color: #cbd5e0; 
+            cursor: not-allowed;
+        }
+        
+        button:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-encode { background: linear-gradient(135deg, #27ae60, #229954); }
+        .btn-decode { background: linear-gradient(135deg, #2980b9, #1f5f8b); }
+        
+        .result-display { 
+            margin-top: 20px; 
+            text-align: center; 
+            border-top: 2px dashed #eee; 
+            padding-top: 15px; 
+            min-height: 1.5em;
+        }
+        
+        .res-item { 
+            margin-bottom: 15px; 
+            font-size: 2em; 
+            font-weight: bold; 
+            color: var(--dark); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .badge { 
+            font-size: 0.4em; 
+            padding: 5px 12px; 
+            border-radius: 5px; 
+            color: white; 
+            margin-top: 8px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+        }
+        
+        .validation-info {
+            font-size: 0.35em;
+            color: #666;
+            margin-top: 8px;
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .check-item {
+            display: inline-block;
+            margin: 0 8px;
+            font-weight: normal;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .info-box h3 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .info-box li {
+            margin: 8px 0;
+            color: #424242;
+            line-height: 1.6;
+        }
+        
+        .logic-box {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .logic-box h3 {
+            margin-top: 0;
+            color: #e65100;
+            font-size: 1.1em;
+        }
+        
+        .logic-step {
+            background: white;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 3px solid #ff9800;
+        }
+        
+        .logic-step strong {
+            color: #e65100;
+        }
+        
+        .code-example {
+            background: #263238;
+            color: #aed581;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .remark-box { 
+            background: #fff3cd; 
+            padding: 15px; 
+            border-radius: 10px; 
+            color: #856404; 
+            font-size: 0.9em; 
+            border: 2px solid #ffc107; 
+            margin-top: 20px;
+        }
+        
+        .error-msg {
+            color: var(--danger);
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        
+        .success-msg {
+            color: var(--success);
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        details {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: #495057;
+            padding: 5px;
+            user-select: none;
+        }
+
+        summary:hover {
+            color: #667eea;
+        }
+
+        .formula-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>QR Logic Master Pro</h2>
+    <h2>🔐 QR Logic Master Pro v2</h2>
+    <div class="version">Smart Validation System with 3-Rule Filter</div>
 
+    <!-- กล่องอธิบายหลักการ -->
+    <div class="info-box">
+        <h3>💡 หลักการทำงานของระบบ</h3>
+        <ul>
+            <li><strong>ระบบมี 2 สูตร:</strong> Legacy Formula (สูตรเดิม) และ New Formula (สูตรใหม่)</li>
+            <li><strong>ปัญหา:</strong> QR Code 1 ตัว อาจถอดได้ 2 Serial ที่ต่างกัน</li>
+            <li><strong>วิธีแก้:</strong> ใช้ <strong>กฎ 3 ข้อ</strong> ร่วมกันเพื่อกรองคำตอบที่ถูกต้อง</li>
+        </ul>
+    </div>
+
+    <div class="logic-box">
+        <h3>🎯 กฎการยืนยัน 3 ข้อ (Validation Rules)</h3>
+        
+        <div class="logic-step">
+            <strong>กฎที่ 1:</strong> QR Code ต้องมีตัวเลข (0-9) อย่างน้อย 1 ตัว
+            <div class="code-example">ตัวอย่าง: I4SR8 ✓ (มี 4,8) | JBTCL ✗ (ไม่มีเลข)</div>
+        </div>
+
+        <div class="logic-step">
+            <strong>กฎที่ 2:</strong> Serial ต้องอยู่ใน Batch 0-3 (00000000-39999999)
+            <div class="code-example">ตัวอย่าง: B14859526 ✓ (Batch 0-1) | B82443355 ✗ (Batch 4+)</div>
+        </div>
+
+        <div class="logic-step">
+            <strong>กฎที่ 3:</strong> ตัวอักษรตัวแรกของ QR บอก Batch
+            <div class="code-example">
+0-9, A-I (index 0-18)  → Batch 0-1<br>
+P-Z (index 25-35)      → Batch 2-3<br>
+J-O (index 19-24)      → ไม่ทราบ (ยังไม่มีข้อมูล)
+            </div>
+        </div>
+
+        <div style="margin-top: 15px; padding: 12px; background: white; border-radius: 8px;">
+            <strong>💭 ตัวอย่างการใช้งาน:</strong><br>
+            QR: <code>IMAF8</code> ถอดรหัสได้ 2 ค่า<br>
+            → <code>B14859526</code> (Legacy, Batch 0-1, ตัวแรก='I'=18) ✅ ผ่านทั้ง 3 กฎ<br>
+            → <code>B82443355</code> (New, Batch 4+, ตัวแรก='I'=18) ❌ ไม่ผ่านกฎที่ 2 และ 3<br>
+            <strong>คำตอบ:</strong> <code>B14859526</code>
+        </div>
+    </div>
+
+    <!-- ส่วนเข้ารหัส -->
     <div class="section encode-bg">
         <label>1. สร้างรหัส QR (ป้อน Serial 8 หลัก)</label>
-        <input type="text" id="serialIn" placeholder="ป้อนเลข 0, 1, 2, 3 นำหน้าเท่านั้น" maxlength="8" oninput="vInput(this, 8, 'btnE', true)">
+        <input type="text" id="serialIn" placeholder="เช่น 01735041 หรือ 14859526" maxlength="8" oninput="vInput(this, 8, 'btnE', true)">
         <button id="btnE" class="btn-encode" onclick="processEncode()" disabled>สร้างรหัส QR Code</button>
         <div id="resE" class="result-display"></div>
     </div>
 
+    <!-- ส่วนถอดรหัส -->
     <div class="section decode-bg">
-        <label>2. ถอดรหัสย้อนกลับ (กรองเฉพาะช่วง 0-1 และ 2-3)</label>
-        <input type="text" id="qrIn" placeholder="เช่น P4RYT" maxlength="5" style="text-transform: uppercase;" oninput="vInput(this, 5, 'btnD', false)">
-        <button id="btnD" class="btn-decode" onclick="processDecode()" disabled>ถอดรหัส (Strict Filter)</button>
+        <label>2. ถอดรหัสด้วย Smart Validation (ป้อน QR 5 ตัว)</label>
+        <input type="text" id="qrIn" placeholder="เช่น I4SR8 หรือ IMAF8" maxlength="5" style="text-transform: uppercase;" oninput="vInput(this, 5, 'btnD', false)">
+        <button id="btnD" class="btn-decode" onclick="processDecode()" disabled>ถอดรหัส (3-Rule Filter)</button>
         <div id="resD" class="result-display"></div>
     </div>
 
+    <!-- รายละเอียดเพิ่มเติม -->
+    <details>
+        <summary>📖 รายละเอียดสูตร Legacy และ New</summary>
+        <div class="formula-info">
+            <strong>Legacy Formula (สูตรเดิม):</strong><br>
+            • ใช้กับ Batch ทั้ง 0-1 และ 2-3<br>
+            • r = (Serial × 35477987 + 46913010) mod 60466176<br>
+            • แปลง r เป็น base-36 (5 หลัก) = QR Code<br><br>
+
+            <strong>New Formula (สูตรใหม่):</strong><br>
+            • ใช้กับ Batch 0-1<br>
+            • ซับซ้อนกว่า โดยอิงตำแหน่งตัวอักษรที่ 2 ของ QR<br>
+            • ใช้ modulo 100000000 และ offset ต่างๆ
+        </div>
+    </details>
+
     <div class="remark-box">
-        <b>⚠️ Remark:</b> ข้อมูลชุดนี้วิเคราะห์จากกลุ่มตัวอย่างจำนวนน้อย (Sample) หากคำนวณแล้วได้เลขในช่วงอื่น (เช่น 4, 5, 6...) ระบบจะกรองออกเพราะถือว่าไม่เข้ากฎ Batch ปัจจุบันครับ
+        <strong>⚠️ หมายเหตุสำคัญ:</strong><br>
+        • ระบบใช้ prefix "B" นำหน้า Serial เสมอ (เช่น B01735041)<br>
+        • QR Code เก็บเฉพาะ Serial 8 หลัก (ไม่เก็บ "B")<br>
+        • หาก QR ถอดได้หลายค่า ระบบจะแสดงเฉพาะค่าที่ผ่านกฎทั้ง 3 ข้อ<br>
+        • ข้อมูลนี้วิเคราะห์จาก Sample จำนวนจำกัด หาก Serial อยู่นอกช่วง 0-3 อาจไม่ถูกต้อง
     </div>
 </div>
 
 <script>
     const ABC = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const M1 = 60466176n; const A1 = 35477987n; const C1 = 46913010n; const INV1 = 46213067n;
-    const MOD2 = 100000000n; const MULT2 = 32216237n; const OFF2 = 42413113n;
+    
+    // Legacy Formula Constants
+    const M1 = 60466176n;
+    const A1 = 35477987n;
+    const C1 = 46913010n;
+    const INV1 = 46213067n;
+    
+    // New Formula Constants
+    const MOD2 = 100000000n;
+    const MULT2 = 32216237n;
+    const OFF2 = 42413113n;
 
     function vInput(el, len, btnId, isNum) {
         el.value = isNum ? el.value.replace(/\D/g, '') : el.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
         document.getElementById(btnId).disabled = (el.value.length !== len);
     }
 
-    function processEncode() {
-        const sStr = document.getElementById('serialIn').value;
-        const sVal = parseInt(sStr);
-        const sBig = BigInt(sStr);
-        let res = "", mode = "", color = "";
+    // ฟังก์ชันตรวจสอบกฎ
+    function validateQR(qr) {
+        // กฎที่ 1: ต้องมีตัวเลข
+        const hasDigit = /\d/.test(qr);
+        return hasDigit;
+    }
 
-        if (sVal < 20000000) { // Batch 0-1 (New Formula)
-            for(let m=0n; m<3n; m++) {
-                let x = sBig + m * MOD2;
-                for(let i=0; i<36; i++) {
-                    let k = (MULT2 * BigInt(i) + OFF2) % MOD2;
-                    let n = x - k;
-                    if(n >= 0n && n < M1) {
-                        let tempQR = "", tn = Number(n);
-                        for(let j=4; j>=0; j--) { let p=Math.pow(36,j); tempQR+=ABC[Math.floor(tn/p)]; tn%=p; }
-                        if(ABC.indexOf(tempQR[1]) === i) { res = tempQR; break; }
+    function validateSerial(serial, qr) {
+        const sBig = BigInt(serial);
+        
+        // กฎที่ 2: ต้องอยู่ใน Batch 0-3
+        if (sBig >= 40000000n) return { valid: false, reason: "นอกช่วง Batch 0-3" };
+        
+        // กฎที่ 3: ตัวแรกของ QR ต้องตรงกับ Batch
+        const firstIdx = ABC.indexOf(qr[0]);
+        const batch = sBig < 20000000n ? "0-1" : "2-3";
+        
+        let expectedBatch = "";
+        if (firstIdx <= 18) expectedBatch = "0-1";
+        else if (firstIdx >= 25) expectedBatch = "2-3";
+        else expectedBatch = "?";
+        
+        if (expectedBatch !== "?" && expectedBatch !== batch) {
+            return { valid: false, reason: `ตัวแรกไม่ตรง (คาด ${expectedBatch}, จริง ${batch})` };
+        }
+        
+        return { valid: true, batch: batch };
+    }
+
+    function encodeLegacy(serial) {
+        const r = (serial * A1 + C1) % M1;
+        let qr = "";
+        let n = Number(r);
+        for (let i = 4; i >= 0; i--) {
+            const p = Math.pow(36, i);
+            qr += ABC[Math.floor(n / p)];
+            n %= p;
+        }
+        return qr;
+    }
+
+    function encodeNew(serial) {
+        for (let m = 0n; m < 3n; m++) {
+            const x = serial + m * MOD2;
+            for (let i = 0; i < 36; i++) {
+                const k = (MULT2 * BigInt(i) + OFF2) % MOD2;
+                const n = x - k;
+                if (n >= 0n && n < M1) {
+                    let tempQR = "";
+                    let tn = Number(n);
+                    for (let j = 4; j >= 0; j--) {
+                        const p = Math.pow(36, j);
+                        tempQR += ABC[Math.floor(tn / p)];
+                        tn %= p;
+                    }
+                    if (ABC.indexOf(tempQR[1]) === i) {
+                        return tempQR;
                     }
                 }
-                if(res) break;
             }
-            mode = "NEW FORMULA (0-1)"; color = "#3498db";
-        } else if (sVal >= 20000000 && sVal < 40000000) { // Batch 2-3 (Legacy)
-            const r = (sBig * A1 + C1) % M1;
-            let tempQR = "", n = Number(r);
-            for(let i=4; i>=0; i--) { let p=Math.pow(36,i); tempQR+=ABC[Math.floor(n/p)]; n%=p; }
-            res = tempQR; mode = "LEGACY FORMULA (2-3)"; color = "#27ae60";
-        } else {
-            res = "ไม่อยู่ในเงื่อนไข 0-3"; color = "#e74c3c";
         }
-        document.getElementById('resE').innerHTML = `<div class="res-item">${res} <span class="badge" style="background:${color}">${mode}</span></div>`;
+        return null;
+    }
+
+    function processEncode() {
+        const sStr = document.getElementById('serialIn').value;
+        const serial = BigInt(sStr);
+        const resE = document.getElementById('resE');
+        
+        // ลองทั้ง 2 สูตร
+        const qrLegacy = encodeLegacy(serial);
+        const qrNew = encodeNew(serial);
+        
+        const results = [];
+        
+        // ตรวจสอบ Legacy
+        if (validateQR(qrLegacy)) {
+            const validation = validateSerial(Number(serial), qrLegacy);
+            if (validation.valid) {
+                results.push({
+                    qr: qrLegacy,
+                    formula: "Legacy",
+                    batch: validation.batch,
+                    color: validation.batch === "0-1" ? "#3498db" : "#27ae60"
+                });
+            }
+        }
+        
+        // ตรวจสอบ New
+        if (qrNew && validateQR(qrNew)) {
+            const validation = validateSerial(Number(serial), qrNew);
+            if (validation.valid) {
+                results.push({
+                    qr: qrNew,
+                    formula: "New",
+                    batch: validation.batch,
+                    color: "#9b59b6"
+                });
+            }
+        }
+        
+        if (results.length === 0) {
+            resE.innerHTML = '<span class="error-msg">❌ ไม่สามารถสร้าง QR ที่ผ่านกฎได้</span>';
+        } else {
+            resE.innerHTML = results.map(r => `
+                <div class="res-item">
+                    ${r.qr}
+                    <span class="badge" style="background:${r.color}">${r.formula} (Batch ${r.batch})</span>
+                    <div class="validation-info">
+                        <span class="check-item">✓ มีตัวเลข</span>
+                        <span class="check-item">✓ Batch 0-3</span>
+                        <span class="check-item">✓ ตัวแรกตรง</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+
+    function decodeLegacy(qr) {
+        let r = 0n;
+        for (let i = 0; i < 5; i++) {
+            r = r * 36n + BigInt(ABC.indexOf(qr[i]));
+        }
+        let st = (r - C1) % M1;
+        if (st < 0n) st += M1;
+        return (st * INV1) % M1;
+    }
+
+    function decodeNew(qr) {
+        let r = 0n;
+        for (let i = 0; i < 5; i++) {
+            r = r * 36n + BigInt(ABC.indexOf(qr[i]));
+        }
+        const secondIdx = ABC.indexOf(qr[1]);
+        const k = (MULT2 * BigInt(secondIdx) + OFF2) % MOD2;
+        return (r + k) % MOD2;
     }
 
     function processDecode() {
         const qr = document.getElementById('qrIn').value.toUpperCase();
         const resD = document.getElementById('resD');
-        let r = 0n; for(let i=0; i<5; i++) r = r * 36n + BigInt(ABC.indexOf(qr[i]));
-
-        let results = [];
-
-        // 1. ถอดสูตรใหม่ (เช็คว่าได้ 0-1 หรือไม่)
-        const k = (MULT2 * BigInt(ABC.indexOf(qr[1])) + OFF2) % MOD2;
-        let sNew = (r + k) % MOD2;
-        if (sNew >= 0n && sNew < 20000000n) {
-            results.push({ serial: sNew, mode: 'BATCH 0-1', color: '#3498db' });
+        
+        // กฎที่ 1: ตรวจสอบว่ามีตัวเลขหรือไม่
+        if (!validateQR(qr)) {
+            resD.innerHTML = '<span class="error-msg">❌ QR ไม่ผ่านกฎที่ 1: ต้องมีตัวเลขอย่างน้อย 1 ตัว</span>';
+            return;
         }
-
-        // 2. ถอดสูตรเดิม (เช็คว่าได้ 2-3 หรือไม่)
-        let st = (r - C1) % M1; if(st < 0n) st += M1;
-        let sOld = (st * INV1) % M1;
-        if (sOld >= 20000000n && sOld < 40000000n) {
-            results.push({ serial: sOld, mode: 'BATCH 2-3', color: '#27ae60' });
+        
+        const results = [];
+        
+        // ถอดด้วย Legacy
+        const sLegacy = decodeLegacy(qr);
+        const qrVerifyLegacy = encodeLegacy(sLegacy);
+        if (qrVerifyLegacy === qr) {
+            const validation = validateSerial(Number(sLegacy), qr);
+            const checks = {
+                hasDigit: true,
+                inBatch03: validation.valid || validation.reason === "ตัวแรกไม่ตรง",
+                firstCharMatch: validation.valid
+            };
+            results.push({
+                serial: sLegacy,
+                formula: "Legacy",
+                validation: validation,
+                checks: checks,
+                allPass: checks.hasDigit && checks.inBatch03 && checks.firstCharMatch
+            });
         }
-
-        if (results.length === 0) {
-            resD.innerHTML = '<span style="color:red; font-size:0.8em;">ไม่พบหมายเลขในช่วง 0-3 ที่ถูกต้อง</span>';
+        
+        // ถอดด้วย New
+        const sNew = decodeNew(qr);
+        const qrVerifyNew = encodeNew(sNew);
+        if (qrVerifyNew === qr) {
+            const validation = validateSerial(Number(sNew), qr);
+            const checks = {
+                hasDigit: true,
+                inBatch03: validation.valid || validation.reason.includes("ตัวแรก"),
+                firstCharMatch: validation.valid
+            };
+            results.push({
+                serial: sNew,
+                formula: "New",
+                validation: validation,
+                checks: checks,
+                allPass: checks.hasDigit && checks.inBatch03 && checks.firstCharMatch
+            });
+        }
+        
+        // กรองเฉพาะที่ผ่านทุกกฎ
+        const validResults = results.filter(r => r.allPass);
+        
+        if (validResults.length === 0) {
+            // แสดงทั้งหมด พร้อมบอกว่าไม่ผ่านกฎไหน
+            if (results.length > 0) {
+                resD.innerHTML = '<div style="color: #e74c3c; margin-bottom: 15px; font-weight: bold;">⚠️ ไม่พบคำตอบที่ผ่านกฎทั้ง 3 ข้อ</div>' + 
+                    results.map(r => {
+                        const batch = r.serial < 20000000n ? "0-1" : r.serial < 40000000n ? "2-3" : "4+";
+                        const color = batch === "0-1" ? "#95a5a6" : batch === "2-3" ? "#95a5a6" : "#95a5a6";
+                        return `
+                            <div class="res-item" style="opacity: 0.6;">
+                                B${r.serial.toString().padStart(8, '0')}
+                                <span class="badge" style="background:${color}">${r.formula} (Batch ${batch})</span>
+                                <div class="validation-info" style="color: #e74c3c;">
+                                    <span class="check-item">${r.checks.hasDigit ? '✓' : '✗'} มีตัวเลข</span>
+                                    <span class="check-item">${r.checks.inBatch03 ? '✓' : '✗'} Batch 0-3</span>
+                                    <span class="check-item">${r.checks.firstCharMatch ? '✓' : '✗'} ตัวแรกตรง</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+            } else {
+                resD.innerHTML = '<span class="error-msg">❌ ไม่สามารถถอดรหัสได้</span>';
+            }
         } else {
-            resD.innerHTML = results.map(res => `
-                <div class="res-item">
-                    ${res.serial.toString().padStart(8, '0')}
-                    <span class="badge" style="background:${res.color}">${res.mode}</span>
-                </div>
-            `).join('');
+            resD.innerHTML = validResults.map(r => {
+                const batch = r.validation.batch;
+                const color = batch === "0-1" ? "#3498db" : "#27ae60";
+                return `
+                    <div class="res-item">
+                        B${r.serial.toString().padStart(8, '0')}
+                        <span class="badge" style="background:${color}">${r.formula} (Batch ${batch})</span>
+                        <div class="validation-info">
+                            <span class="check-item">✓ มีตัวเลข</span>
+                            <span class="check-item">✓ Batch 0-3</span>
+                            <span class="check-item">✓ ตัวแรกตรง</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            if (validResults.length > 1) {
+                resD.innerHTML += '<div class="success-msg">✅ พบ ' + validResults.length + ' คำตอบที่ผ่านกฎ</div>';
+            }
         }
     }
 </script>
