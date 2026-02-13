@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Logic Master - Strict Validation</title>
+    <title>QR Logic Master v3 - Strict & Explainer</title>
     <style>
         :root {
             --primary: #2ecc71;
@@ -11,96 +11,104 @@
             --dark: #2c3e50;
             --danger: #e74c3c;
             --bg: #f4f7f6;
+            --gold: #f1c40f;
         }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); padding: 20px; display: flex; justify-content: center; }
-        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 650px; }
+        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); width: 100%; max-width: 700px; }
         h2 { color: var(--dark); text-align: center; margin-bottom: 25px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         
-        .section { padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #eee; transition: 0.3s; }
+        .section { padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #eee; position: relative; }
         .encode-bg { background-color: #f0fff4; border-color: #c6f6d5; }
         .decode-bg { background-color: #f0f7ff; border-color: #bee3f8; }
         
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: #4a5568; font-size: 0.9em; }
-        .input-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
-        
-        input { width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1.2em; text-align: center; box-sizing: border-box; transition: 0.2s; }
-        input:focus { border-color: var(--info); outline: none; box-shadow: 0 0 8px rgba(52, 152, 219, 0.2); }
+        label { display: block; margin-bottom: 10px; font-weight: bold; color: #4a5568; font-size: 0.95em; }
+        input { width: 100%; padding: 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1.3em; text-align: center; box-sizing: border-box; transition: 0.3s; }
+        input:focus { border-color: var(--info); outline: none; box-shadow: 0 0 10px rgba(52, 152, 219, 0.15); }
         input.invalid { border-color: var(--danger); background-color: #fff5f5; }
         
-        .status-msg { font-size: 0.8em; min-height: 1.2em; margin-bottom: 10px; font-weight: 500; }
+        .status-msg { font-size: 0.85em; min-height: 1.5em; margin-top: 5px; font-weight: 500; }
         .error { color: var(--danger); }
         .success { color: var(--primary); }
 
-        button { padding: 14px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; color: white; width: 100%; transition: 0.2s; font-size: 1em; }
-        button:disabled { background-color: #cbd5e0; cursor: not-allowed; opacity: 0.7; }
+        button { padding: 15px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; color: white; width: 100%; transition: 0.2s; font-size: 1.1em; margin-top: 10px; }
+        button:disabled { background-color: #cbd5e0; cursor: not-allowed; opacity: 0.6; }
         button:active:not(:disabled) { transform: scale(0.98); }
         
         .btn-encode { background-color: var(--primary); }
         .btn-decode { background-color: var(--info); }
         
-        .result-display { margin-top: 15px; text-align: center; font-size: 1.8em; font-weight: bold; color: var(--dark); min-height: 1.4em; border-top: 2px dashed #eee; pt: 15px; letter-spacing: 2px; }
+        .result-display { margin-top: 20px; text-align: center; font-size: 2em; font-weight: bold; color: var(--dark); min-height: 1.5em; border-top: 2px dashed #eee; padding-top: 15px; letter-spacing: 3px; }
 
-        /* Logic Explainer */
-        .logic-card { background: #2c3e50; color: #ecf0f1; padding: 25px; border-radius: 15px; margin-top: 30px; line-height: 1.7; }
-        .logic-card h3 { color: var(--primary); margin-top: 0; border-bottom: 1px solid #455a64; pb: 10px; }
-        .logic-card p { font-size: 0.9em; margin: 10px 0; }
-        .formula { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.95em; color: #f1c40f; margin: 10px 0; text-align: center; }
-        ul { padding-left: 20px; font-size: 0.85em; color: #bdc3c7; }
+        /* AI Explainer Style */
+        .ai-explainer { background: var(--dark); color: #ecf0f1; padding: 30px; border-radius: 15px; margin-top: 40px; }
+        .ai-explainer h3 { color: var(--gold); margin-top: 0; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #455a64; padding-bottom: 15px; }
+        .step { margin-bottom: 25px; border-left: 3px solid var(--primary); padding-left: 15px; }
+        .step-title { font-weight: bold; color: var(--primary); display: block; margin-bottom: 5px; }
+        .math-box { background: rgba(255,255,255,0.08); padding: 12px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.95em; color: var(--gold); margin: 8px 0; }
+        .reverse-info { background: rgba(52, 152, 219, 0.15); padding: 15px; border-radius: 10px; border: 1px solid var(--info); font-size: 0.9em; }
+        ul { padding-left: 20px; font-size: 0.9em; color: #bdc3c7; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>QR Logic Master (Strict v2)</h2>
+    <h2>QR Logic Master (Strict & Explainer)</h2>
 
     <div class="section encode-bg">
-        <label>1. สร้างรหัส QR (ต้องระบุเลข Serial ให้ครบ 8 หลัก)</label>
-        <div class="input-group">
-            <input type="text" id="serialIn" placeholder="ระบุเลข 8 หลัก" maxlength="8" oninput="validate(this, 8, 'sMsg', 'btnE', true)">
-            <div id="sMsg" class="status-msg"></div>
-        </div>
+        <label>1. แปลง "ต้นขั้ว" ⮕ "รหัส QR" (ระบุเลข 8 หลักเท่านั้น)</label>
+        <input type="text" id="serialIn" placeholder="เช่น 20516201" maxlength="8" oninput="validate(this, 8, 'sMsg', 'btnE', true)">
+        <div id="sMsg" class="status-msg"></div>
         <button id="btnE" class="btn-encode" onclick="doEncode()" disabled>สร้างรหัส QR</button>
         <div id="resE" class="result-display"></div>
     </div>
 
     <div class="section decode-bg">
-        <label>2. ถอดรหัส Serial (ต้องระบุรหัส QR ให้ครบ 5 หลัก)</label>
-        <div class="input-group">
-            <input type="text" id="qrIn" placeholder="ระบุรหัส 5 หลัก" maxlength="5" oninput="validate(this, 5, 'qMsg', 'btnD', false)">
-            <div id="qMsg" class="status-msg"></div>
-        </div>
-        <button id="btnD" class="btn-decode" onclick="doDecode()" disabled>ถอดรหัสเป็น Serial</button>
+        <label>2. จับผิดจาก "รหัส QR" ⮕ "ต้นขั้ว" (ระบุรหัส 5 หลักเท่านั้น)</label>
+        <input type="text" id="qrIn" placeholder="เช่น W2231" maxlength="5" oninput="validate(this, 5, 'qMsg', 'btnD', false)">
+        <div id="qMsg" class="status-msg"></div>
+        <button id="btnD" class="btn-decode" onclick="doDecode()" disabled>ถอดรหัสหาต้นขั้ว</button>
         <div id="resD" class="result-display" style="color: var(--info);"></div>
     </div>
 
-    <div class="logic-card">
-        <h3>💡 หลักการทำงาน (The Logic)</h3>
-        <p>ระบบนี้ใช้หลักการ <b>Linear Congruential Generator (LCG)</b> ร่วมกับการแปลงฐานเลข เพื่อทำ Obfuscation ให้ข้อมูลอ่านยากขึ้นแต่ตรวจสอบได้แม่นยำครับ</p>
+    <div class="ai-explainer">
+        <h3>✨ หลักการคำนวณ (สรุปโดย AI)</h3>
         
-        <p><b>1. การเข้ารหัส (Encoding):</b></p>
-        <ul>
-            <li>นำเลข Serial คูณด้วยตัวแปรคงที่ (Multiplier) และบวก Offset</li>
-            <li>ทำการ Modulo ด้วย $36^5$ เพื่อจำกัดขนาดข้อมูลให้ไม่เกิน 5 หลัก</li>
-        </ul>
-        <div class="formula">R = (Serial × 35,477,987 + 46,913,010) mod 60,466,176</div>
+        <p style="font-size: 0.95em;">สูตรนี้ใช้แปลงจาก <b>"ต้นขั้ว"</b> ไปเป็น <b>"รหัส QR"</b> เพื่อพรางตาไม่ให้เดาได้ง่ายๆ</p>
 
-        <p><b>2. การถอดรหัส (Decoding):</b></p>
-        <ul>
-            <li>การย้อนกลับในระบบ Modulo ไม่สามารถใช้การหารได้ ต้องใช้ <b>Modular Multiplicative Inverse</b></li>
-            <li>ใช้ค่า Inverse เฉพาะคือ <code>46,213,067</code> เพื่อแก้สมการย้อนกลับมาเป็น Serial</li>
-        </ul>
-        <div class="formula">Serial = ((R - 46,913,010) × 46,213,067) mod 60,466,176</div>
+        <div class="step">
+            <span class="step-title">ขั้นตอนที่ 1: เข้าสมการลับ (Linear Congruential Generator)</span>
+            <p>เอาเลขต้นขั้วมาคูณค่าคงที่ลับและบวก Offset เพื่อให้ตัวเลขกระโดดไปเป็นค่าอื่น</p>
+            <div class="math-box">
+                R = (Serial × 35,477,987 + 46,913,010) mod 60,466,176
+            </div>
+            <ul>
+                <li>เลข 60,466,176 มาจาก $36^5$ เพื่อคุมขนาดรหัส</li>
+                <li>ตัวอย่าง: ต้นขั้ว 20,516,201 จะได้ค่า R = 53,843,725</li>
+            </ul>
+        </div>
 
-        <p><b>3. การแปลงฐาน (Base36):</b></p>
-        <p>ค่าที่ได้จะถูก Map เข้ากับตัวอักษร <code>0-9</code> และ <code>A-Z</code> (รวม 36 ตัว) เพื่อลดความยาวจาก 8 หลัก เหลือเพียง 5 ตัวอักษรครับ</p>
+        <div class="step">
+            <span class="step-title">ขั้นตอนที่ 2: แปลงเป็นรหัสฐาน 36 (Base-36 Encoding)</span>
+            <p>นำเลขที่ได้มาแปลงเป็นรหัสสั้นๆ โดยใช้ตัวเลข 0-9 และตัวอักษร A-Z (รวม 36 ตัว)</p>
+            <ul>
+                <li>ใช้วิธีหารด้วย 36 ไปเรื่อยๆ แล้วเอาเศษมาเทียบตัวอักษร</li>
+                <li>ตัวอย่าง: 53,843,725 แปลงได้รหัส <b>W2231</b></li>
+            </ul>
+        </div>
+
+        <div class="reverse-info">
+            <strong>วิธีเช็คย้อนกลับ (สำหรับจับผิด):</strong><br>
+            นำรหัส QR มาแปลงกลับเป็นตัวเลข แล้วใช้สูตรคณิตศาสตร์ย้อนกลับ (ลบค่าคงที่ ⮕ คูณด้วย <b>ตัวผกผัน 46,213,067</b> ⮕ หารเอาเศษ) จะได้เลขต้นขั้วดั้งเดิมทันทีครับ!
+        </div>
     </div>
 </div>
 
 <script>
-    const M = BigInt(60466176);
-    const A = BigInt(35477987);
-    const B = BigInt(46913010);
-    const INV = BigInt(46213067); // กุญแจถอดรหัสที่คำนวณใหม่
+    // ค่าคงที่จาก Algorithm
+    const M = BigInt(60466176); 
+    const A = BigInt(35477987); 
+    const B = BigInt(46913010); 
+    const INV = BigInt(46213067); // ค่า Modular Inverse ที่ถูกต้องที่สุด
     const ABC = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     function validate(el, len, msgId, btnId, isNum) {
@@ -108,21 +116,21 @@
         const btn = document.getElementById(btnId);
         const msg = document.getElementById(msgId);
         
-        // กรอง Input
+        // กรองข้อมูล
         el.value = isNum ? val.replace(/\D/g, '') : val.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
         
-        const currentLen = el.value.length;
-        if (currentLen === 0) {
+        const curLen = el.value.length;
+        if (curLen === 0) {
             msg.innerText = "";
             el.classList.remove('invalid');
             btn.disabled = true;
-        } else if (currentLen < len) {
-            msg.innerText = `ขาดอีก ${len - currentLen} หลัก`;
+        } else if (curLen < len) {
+            msg.innerText = `⚠️ ขาดอีก ${len - curLen} หลัก`;
             msg.className = "status-msg error";
             el.classList.add('invalid');
             btn.disabled = true;
         } else {
-            msg.innerText = "รูปแบบถูกต้อง ✓";
+            msg.innerText = "ข้อมูลครบถ้วน ✓";
             msg.className = "status-msg success";
             el.classList.remove('invalid');
             btn.disabled = false;
@@ -132,6 +140,8 @@
     function doEncode() {
         const s = BigInt(document.getElementById('serialIn').value);
         const r = (s * A + B) % M;
+        
+        // แปลงเป็นฐาน 36
         let res = "", n = Number(r);
         for (let i = 4; i >= 0; i--) {
             let p = Math.pow(36, i);
@@ -143,12 +153,18 @@
 
     function doDecode() {
         const val = document.getElementById('qrIn').value;
-        let r = BigInt(0);
-        for (let i = 0; i < val.length; i++) r = r * 36n + BigInt(ABC.indexOf(val[i]));
         
-        let step = (r - B) % M;
-        if (step < 0n) step += M;
-        const serial = (step * INV) % M;
+        // แปลงกลับเป็น Decimal R
+        let r = BigInt(0);
+        for (let i = 0; i < val.length; i++) {
+            r = r * 36n + BigInt(ABC.indexOf(val[i]));
+        }
+        
+        // สมการย้อนกลับ
+        let step1 = (r - B) % M;
+        if (step1 < 0n) step1 += M;
+        const serial = (step1 * INV) % M;
+        
         document.getElementById('resD').innerText = serial.toString().padStart(8, '0');
     }
 </script>
